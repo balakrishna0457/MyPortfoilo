@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Eliganti Bala Krishna | Software Engineer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{--navy:#0A1628;--navy-mid:#122040;--navy-light:#1B3260;--gold:#C9A84C;--gold-light:#E8C96A;--white:#F8F9FC;--gray:#8A95A8;--text:#E4EAF5;--card-bg:#111E35;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--text);line-height:1.7;overflow-x:hidden;}
+    #particles-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+    /* LOGIN MODAL */
+    #login-modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(10,22,40,0.92);backdrop-filter:blur(10px);align-items:center;justify-content:center;}
+    #login-modal.show{display:flex;}
+    .login-box{background:var(--card-bg);border:1px solid rgba(201,168,76,0.25);border-radius:14px;padding:2.5rem;width:100%;max-width:380px;animation:popIn 0.3s ease both;}
+    @keyframes popIn{from{opacity:0;transform:scale(0.88);}to{opacity:1;transform:scale(1);}}
+    .login-box h3{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--white);margin-bottom:0.4rem;}
+    .login-box p{color:var(--gray);font-size:0.85rem;margin-bottom:1.5rem;}
+    .login-box input{width:100%;background:rgba(10,22,40,0.8);border:1px solid rgba(201,168,76,0.2);color:var(--text);padding:11px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;margin-bottom:0.8rem;transition:border-color 0.2s;}
+    .login-box input:focus{border-color:var(--gold);}
+    #login-error{color:#f87171;font-size:0.8rem;margin-bottom:0.8rem;display:none;}
+    .login-actions{display:flex;gap:0.8rem;}
+
+    /* ADMIN BADGE */
+    #admin-badge{position:fixed;bottom:24px;right:24px;z-index:999;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);color:var(--gold);padding:8px 18px;border-radius:20px;font-size:0.76rem;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:background 0.2s;backdrop-filter:blur(8px);}
+    #admin-badge:hover{background:rgba(201,168,76,0.22);}
+    #admin-badge.active{background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);color:#22c55e;}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(10,22,40,0.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(201,168,76,0.18);padding:0 2.5rem;height:64px;display:flex;align-items:center;justify-content:space-between;animation:slideDown 0.7s ease both;}
+    @keyframes slideDown{from{transform:translateY(-100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .nav-logo{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--gold);letter-spacing:1px;}
+    .nav-links{display:flex;gap:1.6rem;list-style:none;}
+    .nav-links a{color:var(--gray);text-decoration:none;font-size:0.8rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;transition:color 0.2s;}
+    .nav-links a:hover{color:var(--gold);}
+
+    /* HERO */
+    .hero{min-height:100vh;display:flex;align-items:center;padding:7rem 6rem 4rem;position:relative;z-index:1;}
+    .hero-inner{display:grid;grid-template-columns:1fr auto;gap:4rem;align-items:center;width:100%;max-width:1200px;margin:0 auto;}
+
+    /* PROFILE */
+    .profile-wrap{position:relative;width:280px;height:280px;flex-shrink:0;animation:floatIn 1s ease 0.4s both;}
+    @keyframes floatIn{from{opacity:0;transform:scale(0.7) rotate(-10deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
+    .profile-ring{position:absolute;inset:-14px;border-radius:50%;border:2px solid rgba(201,168,76,0.5);animation:spinRing 8s linear infinite;border-top-color:transparent;border-bottom-color:transparent;}
+    .profile-ring2{position:absolute;inset:-26px;border-radius:50%;border:1px dashed rgba(201,168,76,0.22);animation:spinRing 14s linear infinite reverse;}
+    @keyframes spinRing{to{transform:rotate(360deg);}}
+    .profile-avatar{width:280px;height:280px;border-radius:50%;background:linear-gradient(135deg,var(--navy-light),var(--navy-mid));border:3px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(201,168,76,0.15),0 20px 60px rgba(0,0,0,0.5);cursor:pointer;}
+    .profile-avatar:hover .profile-upload-hint{opacity:1;}
+    .profile-upload-hint{position:absolute;inset:0;border-radius:50%;background:rgba(10,22,40,0.75);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;z-index:2;font-size:0.8rem;color:var(--gold);font-weight:600;gap:6px;pointer-events:none;}
+    .profile-upload-hint.active{pointer-events:auto;}
+    #profile-img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;position:absolute;top:0;left:0;z-index:1;}
+    .profile-initials{font-family:'Playfair Display',serif;font-size:3.6rem;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;z-index:1;}
+    #profile-file{display:none;}
+    .status-dot{position:absolute;bottom:16px;right:16px;width:20px;height:20px;border-radius:50%;background:#22c55e;border:3px solid var(--navy-mid);box-shadow:0 0 12px rgba(34,197,94,0.6);animation:pulse-green 2s infinite;z-index:3;}
+    @keyframes pulse-green{0%,100%{box-shadow:0 0 12px rgba(34,197,94,0.6);}50%{box-shadow:0 0 22px rgba(34,197,94,0.9);}}
+
+    /* HERO TEXT */
+    .hero-text{animation:fadeUp 0.9s ease 0.2s both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+    .hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-size:0.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:7px 16px;border-radius:20px;margin-bottom:1.5rem;}
+    .hero-tag::before{content:'';width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse-green 2s infinite;}
+    .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,5vw,4.2rem);font-weight:800;line-height:1.1;color:var(--white);margin-bottom:0.5rem;}
+    .hero h1 .gold{color:var(--gold);}
+    .typewriter-wrap{font-size:1.15rem;font-weight:500;color:var(--gold);margin-bottom:1.2rem;height:1.8rem;}
+    #typewriter{border-right:2px solid var(--gold);padding-right:3px;animation:blink 0.8s infinite;}
+    @keyframes blink{0%,100%{border-color:var(--gold);}50%{border-color:transparent;}}
+    .hero-sub{font-size:0.97rem;color:var(--gray);max-width:520px;margin-bottom:1.5rem;line-height:1.85;}
+    .hero-contact-row{display:flex;flex-wrap:wrap;gap:0.8rem;margin-bottom:1.8rem;}
+    .hero-contact-item{display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--gray);}
+    .hero-contact-item a{color:var(--gray);text-decoration:none;transition:color 0.2s;}
+    .hero-contact-item a:hover{color:var(--gold);}
+
+    /* STATS ROW */
+    .hero-stats{display:flex;gap:2rem;margin-bottom:2rem;flex-wrap:wrap;}
+    .hero-stat{text-align:center;}
+    .hero-stat-num{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:800;color:var(--gold);line-height:1;}
+    .hero-stat-label{font-size:0.72rem;color:var(--gray);font-weight:500;margin-top:3px;letter-spacing:0.5px;}
+
+    .hero-actions{display:flex;gap:1rem;flex-wrap:wrap;}
+    .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--navy);padding:13px 30px;border:none;font-weight:700;font-size:0.88rem;text-decoration:none;border-radius:6px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 20px rgba(201,168,76,0.3);}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,168,76,0.45);}
+    .btn-outline{border:1.5px solid var(--gold);color:var(--gold);padding:13px 30px;background:transparent;font-weight:600;font-size:0.88rem;text-decoration:none;border-radius:6px;transition:background 0.2s,transform 0.2s;cursor:pointer;}
+    .btn-outline:hover{background:rgba(201,168,76,0.1);transform:translateY(-2px);}
+
+    /* SOCIAL LINKS */
+    .social-links{display:flex;gap:0.8rem;margin-top:1.5rem;}
+    .social-link{width:38px;height:38px;border-radius:50%;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:1rem;transition:background 0.2s,transform 0.2s,border-color 0.2s;}
+    .social-link:hover{background:rgba(201,168,76,0.2);border-color:var(--gold);transform:translateY(-3px);}
+
+    /* REVEAL */
+    .reveal{opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+    .reveal-left{opacity:0;transform:translateX(-40px);transition:opacity 0.7s ease,transform 0.7s ease;}
+    .reveal-left.visible{opacity:1;transform:translateX(0);}
+    .reveal-right{opacity:0;transform:translateX(40px);transition:opacity 0.7s ease,transform 0.7s ease;}
+    .reveal-right.visible{opacity:1;transform:translateX(0);}
+
+    /* SECTIONS */
+    section{padding:6rem 6rem;position:relative;z-index:1;}
+    .section-inner{max-width:1200px;margin:0 auto;}
+    @media(min-width:1400px){section{padding:6rem calc((100vw - 1200px)/2);}}
+    .admin-edit-row{margin-top:0.5rem;}
+    body.admin-mode #hero-edit-btns{display:flex!important;}
+    .skill-group-remove{display:none;float:right;background:none;border:none;color:#f87171;cursor:pointer;font-size:0.85rem;opacity:0.5;transition:opacity 0.2s;}
+    .skill-group-remove:hover{opacity:1;}
+    body.admin-mode .skill-group-remove{display:inline;}
+    .skill-tag-remove{display:none;margin-left:4px;cursor:pointer;color:#f87171;font-size:0.7rem;font-weight:700;vertical-align:middle;}
+    body.admin-mode .skill-tag-remove{display:inline;}
+    .skill-add-tag{display:none;margin-top:0.8rem;}
+    body.admin-mode .skill-add-tag{display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;}
+    .skill-add-input{background:rgba(10,22,40,0.8);border:1px solid rgba(201,168,76,0.2);color:var(--text);padding:5px 10px;border-radius:20px;font-size:0.8rem;outline:none;width:130px;font-family:Inter,sans-serif;}
+    .skill-add-input:focus{border-color:var(--gold);}
+    .skill-add-btn-small{background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;cursor:pointer;}
+    .section-label{font-size:0.72rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem;}
+    .section-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3vw,2.5rem);font-weight:700;color:var(--white);margin-bottom:0.8rem;}
+    .section-divider{width:48px;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light));margin-bottom:3rem;border-radius:2px;}
+    .section-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:3rem;}
+    .section-header .section-divider{margin-bottom:0;}
+
+    /* ADMIN ADD BUTTON */
+    .admin-add-btn{display:none;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:8px 18px;border-radius:20px;font-size:0.76rem;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:background 0.2s;white-space:nowrap;align-self:center;}
+    .admin-add-btn:hover{background:rgba(201,168,76,0.2);}
+    body.admin-mode .admin-add-btn{display:block;}
+
+    /* ADD FORM PANEL */
+    .add-panel{display:none;background:var(--card-bg);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:1.5rem;margin-bottom:2rem;}
+    .add-panel.open{display:block;animation:fadeDown 0.3s ease;}
+    @keyframes fadeDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+    .add-panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
+    .add-panel-grid .full{grid-column:1/-1;}
+    .form-group{display:flex;flex-direction:column;gap:0.4rem;}
+    .form-group label{font-size:0.74rem;font-weight:700;color:var(--gray);letter-spacing:1px;text-transform:uppercase;}
+    .form-group input,.form-group textarea,.form-group select{background:rgba(10,22,40,0.8);border:1px solid rgba(201,168,76,0.2);color:var(--text);padding:10px 13px;border-radius:6px;font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s;}
+    .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--gold);}
+    .form-group textarea{resize:vertical;min-height:80px;}
+    .form-group select option{background:var(--navy-mid);}
+    .panel-actions{display:flex;gap:0.8rem;margin-top:1rem;}
+
+    /* ABOUT */
+    #about{background:rgba(18,32,64,0.7);backdrop-filter:blur(4px);}
+    .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;}
+    .about-text p{color:var(--gray);margin-bottom:1.2rem;font-size:0.97rem;line-height:1.9;}
+    .about-stats{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+    .stat-card{background:var(--card-bg);border:1px solid rgba(201,168,76,0.15);padding:1.5rem;border-radius:8px;transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s;}
+    .stat-card:hover{border-color:var(--gold);transform:translateY(-4px);box-shadow:0 12px 32px rgba(201,168,76,0.12);}
+    .stat-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:800;color:var(--gold);}
+    .stat-label{font-size:0.8rem;color:var(--gray);margin-top:4px;font-weight:500;}
+
+    /* SKILLS */
+    #skills{background:rgba(10,22,40,0.8);}
+    .skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;}
+    .skill-group{background:var(--card-bg);border:1px solid rgba(201,168,76,0.1);padding:2rem;border-radius:10px;transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s;}
+    .skill-group:hover{border-color:rgba(201,168,76,0.4);transform:translateY(-5px);box-shadow:0 16px 40px rgba(0,0,0,0.3);}
+    .skill-group-title{font-size:0.76rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem;}
+    .skill-tags{display:flex;flex-wrap:wrap;gap:0.5rem;}
+    .skill-tag{background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.18);color:var(--text);font-size:0.81rem;padding:5px 12px;border-radius:20px;font-weight:500;transition:background 0.2s,color 0.2s,transform 0.2s;cursor:default;}
+    .skill-tag:hover{background:rgba(201,168,76,0.18);color:var(--gold);transform:scale(1.06);}
+
+    /* SKILLS */
+const skillGroups = [
+  {title:'Languages', skills:['C','C++','Java','Python','SQL']},
+  {title:'Web Technologies', skills:['HTML','CSS','.NET','React.js','Node.js']},
+  {title:'Frameworks', skills:['MVC','Hibernate','Spring Boot','Django','Flask']},
+  {title:'Databases & Tools', skills:['MySQL','MongoDB','VS Code','Git','Jupyter']},
+  {title:'Enterprise Platforms', skills:['ServiceNow','SAP S/4HANA','Salesforce']},
+  {title:'Soft Skills', skills:['DSA & Problem Solving','Communication','People Management','Rapport Building']}
+];
+
+function renderSkills(){
+  const grid = document.getElementById('skills-grid');
+  if(!grid) return;
+  grid.innerHTML = skillGroups.map((g,gi) => `
+    <div class="skill-group reveal">
+      <div class="skill-group-title">
+        ${g.title}
+        <button class="skill-group-remove" onclick="removeSkillGroup(${gi})">✕ Remove Group</button>
+      </div>
+      <div class="skill-tags" id="sg-tags-${gi}">
+        ${g.skills.map((s,si) => `
+          <span class="skill-tag">
+            ${s}
+            <span class="skill-tag-remove" onclick="removeSkill(${gi},${si})">✕</span>
+          </span>`).join('')}
+      </div>
+      <div class="skill-add-tag">
+        <input type="text" class="skill-add-input" id="new-skill-${gi}" placeholder="Add skill..." onkeydown="if(event.key==='Enter')addSkillToGroup(${gi})"/>
+        <button class="skill-add-btn-small" onclick="addSkillToGroup(${gi})">+ Add</button>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('#skills-grid .reveal').forEach(el=>obs.observe(el));
+}
+
+function addSkillGroup(){
+  const title = document.getElementById('sg-title').value.trim();
+  const skills = document.getElementById('sg-skills').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!title) { alert('Group title required.'); return; }
+  skillGroups.push({title, skills});
+  renderSkills();
+  document.getElementById('sg-title').value='';
+  document.getElementById('sg-skills').value='';
+  togglePanel('skill-panel');
+}
+
+function removeSkillGroup(gi){
+  if(confirm('Remove "'+skillGroups[gi].title+'" group?')){ skillGroups.splice(gi,1); renderSkills(); }
+}
+
+function removeSkill(gi, si){
+  skillGroups[gi].skills.splice(si,1);
+  renderSkills();
+}
+
+function addSkillToGroup(gi){
+  const input = document.getElementById('new-skill-'+gi);
+  const val = input.value.trim();
+  if(!val) return;
+  skillGroups[gi].skills.push(val);
+  renderSkills();
+}
+
+/* HERO EDITS */
+function toggleStatusEdit(){
+  const row = document.getElementById('status-edit-row');
+  row.style.display = row.style.display==='none' ? 'block' : 'none';
+}
+function updateStatus(){
+  const val = document.getElementById('status-input').value.trim();
+  if(!val) return;
+  document.getElementById('hero-status-tag').textContent = val;
+  toggleStatusEdit();
+}
+function toggleDescEdit(){
+  const row = document.getElementById('desc-edit-row');
+  row.style.display = row.style.display==='none' ? 'block' : 'none';
+  if(row.style.display==='block'){
+    document.getElementById('desc-input').value = document.getElementById('hero-desc').textContent.trim();
+  }
+}
+function updateDesc(){
+  const val = document.getElementById('desc-input').value.trim();
+  if(!val) return;
+  document.getElementById('hero-desc').textContent = val;
+  toggleDescEdit();
+}
+
+/* PROJECTS */
+    #projects{background:rgba(18,32,64,0.7);}
+    .projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2rem;}
+    .project-card{background:var(--card-bg);border:1px solid rgba(201,168,76,0.1);border-radius:12px;padding:2rem;transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+    .project-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light));transform:scaleX(0);transform-origin:left;transition:transform 0.4s ease;}
+    .project-card:hover{border-color:rgba(201,168,76,0.4);transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,0.35);}
+    .project-card:hover::before{transform:scaleX(1);}
+    .project-icon{font-size:2rem;margin-bottom:1rem;display:block;}
+    .project-title{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--white);margin-bottom:0.6rem;}
+    .project-desc{color:var(--gray);font-size:0.87rem;line-height:1.75;margin-bottom:1.2rem;flex:1;}
+    .project-tech{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem;}
+    .tech-badge{background:rgba(201,168,76,0.1);color:var(--gold);font-size:0.72rem;font-weight:600;padding:4px 10px;border-radius:20px;}
+    .project-links{display:flex;gap:0.6rem;margin-top:auto;}
+    .project-link{display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,0.3);padding:5px 12px;border-radius:20px;transition:background 0.2s;}
+    .project-link:hover{background:rgba(201,168,76,0.12);}
+    .project-remove{display:none;position:absolute;top:12px;right:12px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.8rem;align-items:center;justify-content:center;}
+    body.admin-mode .project-remove{display:flex;}
+
+    /* EXPERIENCE */
+    #experience{background:rgba(10,22,40,0.85);}
+    .exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;}
+    .exp-sub-title{font-size:0.72rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gray);margin-bottom:1.8rem;}
+    .timeline-item{padding-left:1.8rem;border-left:2px solid rgba(201,168,76,0.2);margin-bottom:2rem;position:relative;transition:border-color 0.3s;}
+    .timeline-item:hover{border-left-color:var(--gold);}
+    .timeline-item::before{content:'';position:absolute;left:-6px;top:6px;width:10px;height:10px;background:var(--gold);border-radius:50%;box-shadow:0 0 10px rgba(201,168,76,0.5);transition:transform 0.3s;}
+    .timeline-item:hover::before{transform:scale(1.4);}
+    .tl-date{font-size:0.76rem;color:var(--gold);font-weight:700;margin-bottom:0.3rem;}
+    .tl-role{font-size:1rem;font-weight:600;color:var(--white);margin-bottom:0.2rem;}
+    .tl-org{font-size:0.83rem;color:var(--gray);margin-bottom:0.4rem;}
+    .tl-grade{font-size:0.8rem;color:var(--gold);font-weight:600;margin-bottom:0.4rem;}
+    .tl-bullets{list-style:none;padding:0;margin:0;}
+    .tl-bullets li{font-size:0.85rem;color:var(--gray);line-height:1.65;padding-left:1rem;position:relative;margin-bottom:0.35rem;}
+    .tl-bullets li::before{content:'▸';position:absolute;left:0;color:var(--gold);font-size:0.7rem;top:3px;}
+    .edu-remove{display:none;float:right;background:none;border:none;color:#f87171;cursor:pointer;font-size:0.85rem;opacity:0.5;}
+    body.admin-mode .edu-remove{display:inline;}
+
+    /* CERTS */
+    .cert-list{display:flex;flex-direction:column;gap:0.9rem;}
+    .cert-item{background:var(--card-bg);border:1px solid rgba(201,168,76,0.12);padding:1.1rem 1.4rem;border-radius:8px;display:flex;align-items:center;gap:1rem;position:relative;transition:border-color 0.25s,transform 0.25s;animation:certPop 0.4s ease both;}
+    @keyframes certPop{from{opacity:0;transform:scale(0.93) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
+    .cert-item:hover{border-color:rgba(201,168,76,0.4);transform:translateX(6px);}
+    .cert-icon{width:38px;height:38px;background:rgba(201,168,76,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+    .cert-name{font-size:0.9rem;font-weight:600;color:var(--white);}
+    .cert-issuer{font-size:0.76rem;color:var(--gray);margin-top:2px;}
+    .cert-remove{display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#f87171;cursor:pointer;font-size:1rem;opacity:0.4;transition:opacity 0.2s;}
+    .cert-remove:hover{opacity:1;}
+    body.admin-mode .cert-remove{display:block;}
+
+    /* PUBLICATIONS */
+    #publications{background:rgba(18,32,64,0.7);}
+    .pub-list{display:flex;flex-direction:column;gap:1.2rem;}
+    .pub-card{background:var(--card-bg);border:1px solid rgba(201,168,76,0.12);border-radius:10px;padding:1.6rem;position:relative;transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s;border-left:4px solid var(--gold);}
+    .pub-card:hover{border-color:rgba(201,168,76,0.4);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.3);}
+    .pub-badge-row{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.8rem;}
+    .pub-badge{font-size:0.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:20px;}
+    .pub-badge.springer{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid rgba(201,168,76,0.3);}
+    .pub-badge.conf{background:rgba(99,179,237,0.1);color:#63b3ed;border:1px solid rgba(99,179,237,0.25);}
+    .pub-badge.year{background:rgba(154,230,180,0.1);color:#9ae6b4;border:1px solid rgba(154,230,180,0.25);}
+    .pub-title{font-weight:700;font-size:1rem;color:var(--white);margin-bottom:0.4rem;}
+    .pub-meta{font-size:0.8rem;color:var(--gray);margin-bottom:0.8rem;}
+    .pub-links{display:flex;gap:0.6rem;flex-wrap:wrap;}
+    .pub-link{display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,0.3);padding:5px 12px;border-radius:20px;transition:background 0.2s;}
+    .pub-link:hover{background:rgba(201,168,76,0.12);}
+    .pub-remove{display:none;position:absolute;top:14px;right:14px;background:none;border:none;color:#f87171;cursor:pointer;font-size:1rem;opacity:0.4;transition:opacity 0.2s;}
+    .pub-remove:hover{opacity:1;}
+    body.admin-mode .pub-remove{display:block;}
+
+    /* CONTACT */
+    #contact{background:rgba(10,22,40,0.85);}
+    .contact-inner{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;}
+    .contact-info p{color:var(--gray);margin-bottom:2rem;line-height:1.85;}
+    .contact-links{display:flex;flex-direction:column;gap:0.8rem;}
+    .contact-link{display:flex;align-items:center;gap:0.9rem;color:var(--text);text-decoration:none;font-size:0.9rem;font-weight:500;padding:0.6rem 0;border-bottom:1px solid rgba(201,168,76,0.07);transition:color 0.2s,padding-left 0.2s;}
+    .contact-link:hover{color:var(--gold);padding-left:6px;}
+    .contact-link-icon{width:36px;height:36px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+    .contact-form{display:flex;flex-direction:column;gap:1rem;}
+
+    footer{background:var(--navy);border-top:1px solid rgba(201,168,76,0.12);text-align:center;padding:2rem;color:var(--gray);font-size:0.82rem;position:relative;z-index:1;}
+    footer span{color:var(--gold);}
+
+    @media(max-width:900px){
+      section{padding:4rem 1.5rem;}
+      .hero{padding:6rem 1.5rem 3rem;}
+      .hero-inner{grid-template-columns:1fr;}
+      .profile-wrap{width:180px;height:180px;margin:0 auto;}
+      .profile-avatar{width:180px;height:180px;}
+      .about-grid,.exp-grid,.contact-inner{grid-template-columns:1fr;gap:2rem;}
+      .nav-links{display:none;}
+      .add-panel-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+<canvas id="particles-canvas"></canvas>
+
+<!-- LOGIN MODAL -->
+<div id="login-modal">
+  <div class="login-box">
+    <h3>🔐 Admin Login</h3>
+    <p>Enter credentials to unlock edit mode.</p>
+    <input type="text" id="login-user" placeholder="Username" autocomplete="off"/>
+    <input type="password" id="login-pass" placeholder="Password"/>
+    <div id="login-error">❌ Invalid username or password.</div>
+    <div class="login-actions">
+      <button class="btn-primary" onclick="doLogin()">Login</button>
+      <button class="btn-outline" onclick="closeLogin()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="admin-badge" onclick="handleAdminClick()">🔒 Admin</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">EBK.</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#publications">Publications</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-tag" id="hero-status-tag">Open to Opportunities</div>
+      <div class="admin-edit-row" id="status-edit-row" style="display:none;margin-bottom:1rem;">
+        <input type="text" id="status-input" value="Open to Opportunities" style="background:rgba(10,22,40,0.8);border:1px solid rgba(201,168,76,0.3);color:var(--text);padding:8px 12px;border-radius:6px;font-family:Inter,sans-serif;font-size:0.85rem;outline:none;width:280px;"/>
+        <button onclick="updateStatus()" style="margin-left:8px;background:var(--gold);color:var(--navy);border:none;padding:8px 16px;border-radius:6px;font-weight:700;font-size:0.8rem;cursor:pointer;">Save</button>
+        <button onclick="toggleStatusEdit()" style="margin-left:6px;background:transparent;border:1px solid var(--gray);color:var(--gray);padding:8px 14px;border-radius:6px;font-size:0.8rem;cursor:pointer;">Cancel</button>
+      </div>
+      <h1>Eliganti<br><span class="gold">Bala Krishna</span></h1>
+      <div class="typewriter-wrap"><span id="typewriter"></span></div>
+      <p class="hero-sub" id="hero-desc">Computer Science graduate with a strong foundation in Java, Python, and full-stack development. Published researcher, enterprise-certified, and passionate about building impactful, production-ready software.</p>
+      <div class="admin-edit-row" id="desc-edit-row" style="display:none;margin-bottom:1rem;">
+        <textarea id="desc-input" style="background:rgba(10,22,40,0.8);border:1px solid rgba(201,168,76,0.3);color:var(--text);padding:10px 12px;border-radius:6px;font-family:Inter,sans-serif;font-size:0.85rem;outline:none;width:100%;max-width:520px;min-height:80px;resize:vertical;">Computer Science graduate with a strong foundation in Java, Python, and full-stack development. Published researcher, enterprise-certified, and passionate about building impactful, production-ready software.</textarea>
+        <div style="margin-top:6px;display:flex;gap:8px;">
+          <button onclick="updateDesc()" style="background:var(--gold);color:var(--navy);border:none;padding:8px 16px;border-radius:6px;font-weight:700;font-size:0.8rem;cursor:pointer;">Save</button>
+          <button onclick="toggleDescEdit()" style="background:transparent;border:1px solid var(--gray);color:var(--gray);padding:8px 14px;border-radius:6px;font-size:0.8rem;cursor:pointer;">Cancel</button>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-num" id="stat-projects">2+</div><div class="hero-stat-label">Projects</div></div>
+        <div class="hero-stat"><div class="hero-stat-num" id="stat-certs">3+</div><div class="hero-stat-label">Certifications</div></div>
+        <div class="hero-stat"><div class="hero-stat-num" id="stat-pubs">1+</div><div class="hero-stat-label">Publications</div></div>
+      </div>
+      <div class="hero-contact-row">
+        <div class="hero-contact-item">📍 East Godavari, AP</div>
+        <div class="hero-contact-item">📞 <a href="tel:+918978819688">+91-8978819688</a></div>
+        <div class="hero-contact-item">✉️ <a href="mailto:eligantibalakrishna@gmail.com">eligantibalakrishna@gmail.com</a></div>
+      </div>
+      <div class="admin-edit-btns" id="hero-edit-btns" style="display:none;margin-bottom:1rem;display:none;gap:0.6rem;flex-wrap:wrap;">
+        <button onclick="toggleStatusEdit()" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:6px 14px;border-radius:20px;font-size:0.75rem;font-weight:700;cursor:pointer;letter-spacing:1px;">✏️ Edit Status</button>
+        <button onclick="toggleDescEdit()" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:6px 14px;border-radius:20px;font-size:0.75rem;font-weight:700;cursor:pointer;letter-spacing:1px;">✏️ Edit Description</button>
+      </div>
+      <div class="hero-actions">
+        <a href="#projects" class="btn-primary">View Projects</a>
+        <a href="#contact" class="btn-outline">Get In Touch</a>
+      </div>
+      <div class="social-links">
+        <a href="https://github.com/balakrishna0457" target="_blank" class="social-link" title="GitHub">🐙</a>
+        <a href="https://linkedin.com/in/bala-krishna-link0457" target="_blank" class="social-link" title="LinkedIn">💼</a>
+        <a href="https://www.instagram.com/bala0457?igsh=b2dvZ3ljeXRrN3Bi" target="_blank" class="social-link" title="Instagram">📸</a>
+        <a href="https://x.com/BalaKrishn0458" target="_blank" class="social-link" title="Twitter / X">🐦</a>
+      </div>
+    </div>
+    <div class="profile-wrap">
+      <div class="profile-ring2"></div>
+      <div class="profile-ring"></div>
+      <div class="profile-avatar" onclick="triggerProfileUpload()">
+        <img id="profile-img" src="" alt="Profile"/>
+        <span class="profile-initials" id="profile-initials">EBK</span>
+        <div class="profile-upload-hint" id="profile-hint"><span>📷</span>Change Photo</div>
+        <div class="status-dot"></div>
+      </div>
+      <input type="file" id="profile-file" accept="image/*" onchange="handleProfileUpload(event)"/>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label reveal">Who I Am</div>
+  <h2 class="section-title reveal">About Me</h2>
+  <div class="section-divider reveal"></div>
+  <div class="about-grid">
+    <div class="about-text reveal-left">
+      <p>I am a Computer Science Engineering graduate from Sri Vasavi Engineering College, driven by a genuine curiosity for how technology can solve real-world problems at scale. Whether it is architecting a decentralized lending protocol or automating everyday workflows, I approach every project with precision, purpose, and a commitment to writing code that lasts.</p>
+      <p>My internship at D Base Solutions Pvt. Ltd. was where theory met practice. Working with .NET MVC and MySQL in a professional environment sharpened my understanding of software architecture, database design, and what it truly means to deliver reliable, maintainable software under real client expectations. That experience gave me a developer's instinct — not just how to build features, but how to build them right.</p>
+      <p>Beyond the core stack, I have earned industry certifications in ServiceNow, SAP ABAP on S/4HANA, and Salesforce Agentic AI — equipping me with cross-platform enterprise knowledge that few fresh graduates possess. I am equally comfortable diving deep into algorithms and data structures as I am collaborating on system design, making me a well-rounded engineer ready to contribute from day one.</p>
+    </div>
+    <div class="about-stats reveal-right">
+      <div class="stat-card"><div class="stat-num" id="about-stat-projects">3+</div><div class="stat-label">Projects Delivered</div></div>
+      <div class="stat-card"><div class="stat-num" id="about-stat-certs">5+</div><div class="stat-label">Industry Certifications</div></div>
+      <div class="stat-card"><div class="stat-num">7.92</div><div class="stat-label">B.Tech CGPA</div></div>
+      <div class="stat-card"><div class="stat-num">9.52</div><div class="stat-label">SSC CGPA</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-header">
+    <div>
+      <div class="section-label reveal">What I Work With</div>
+      <h2 class="section-title reveal">Skills & Technologies</h2>
+      <div class="section-divider reveal"></div>
+    </div>
+    <button class="admin-add-btn" onclick="togglePanel('skill-panel')">+ Add Skill Group</button>
+  </div>
+  <div class="add-panel" id="skill-panel">
+    <div class="add-panel-grid">
+      <div class="form-group"><label>Group Title</label><input type="text" id="sg-title" placeholder="e.g. Cloud Platforms"/></div>
+      <div class="form-group"><label>Skills (comma separated)</label><input type="text" id="sg-skills" placeholder="AWS, GCP, Azure"/></div>
+    </div>
+    <div class="panel-actions">
+      <button class="btn-primary" onclick="addSkillGroup()" style="font-size:0.85rem;padding:10px 22px;">Save</button>
+      <button class="btn-outline" onclick="togglePanel('skill-panel')" style="font-size:0.85rem;padding:10px 22px;">Cancel</button>
+    </div>
+  </div>
+  <div class="skills-grid" id="skills-grid"></div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header">
+    <div>
+      <div class="section-label reveal">What I've Built</div>
+      <h2 class="section-title reveal">Projects</h2>
+      <div class="section-divider reveal"></div>
+    </div>
+    <button class="admin-add-btn" onclick="togglePanel('project-panel')">+ Add Project</button>
+  </div>
+  <div class="add-panel" id="project-panel">
+    <div class="add-panel-grid">
+      <div class="form-group"><label>Icon (emoji)</label><input type="text" id="p-icon" placeholder="🚀" maxlength="2"/></div>
+      <div class="form-group"><label>Title</label><input type="text" id="p-title" placeholder="Project Title"/></div>
+      <div class="form-group full"><label>Description</label><textarea id="p-desc" placeholder="Describe your project..."></textarea></div>
+      <div class="form-group full"><label>Technologies (comma separated)</label><input type="text" id="p-tech" placeholder="React, Node.js, MongoDB"/></div>
+      <div class="form-group"><label>GitHub Link</label><input type="url" id="p-github" placeholder="https://github.com/..."/></div>
+      <div class="form-group"><label>Live Demo Link</label><input type="url" id="p-demo" placeholder="https://..."/></div>
+    </div>
+    <div class="panel-actions">
+      <button class="btn-primary" onclick="addProject()" style="font-size:0.85rem;padding:10px 22px;">Save Project</button>
+      <button class="btn-outline" onclick="togglePanel('project-panel')" style="font-size:0.85rem;padding:10px 22px;">Cancel</button>
+    </div>
+  </div>
+  <div class="projects-grid" id="projects-grid"></div>
+</section>
+
+<!-- EXPERIENCE & EDU -->
+<section id="experience">
+  <div class="section-label reveal">My Journey</div>
+  <h2 class="section-title reveal">Experience & Education</h2>
+  <div class="section-divider reveal"></div>
+  <div class="exp-grid">
+    <div class="reveal-left">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;">
+        <div class="exp-sub-title" style="margin-bottom:0;">Work Experience</div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-date">Jul 2022 – Jan 2023</div>
+        <div class="tl-role">Software Development Intern</div>
+        <div class="tl-org">D Base Solutions Pvt. Ltd., Eluru</div>
+        <ul class="tl-bullets">
+          <li>Developed web modules using .NET following MVC architecture to improve workflow efficiency.</li>
+          <li>Designed and optimized MySQL queries for data storage and retrieval.</li>
+          <li>Collaborated with team members to implement real-world software development processes.</li>
+        </ul>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;margin-top:2rem;">
+        <div class="exp-sub-title" style="margin-bottom:0;">Education</div>
+        <button class="admin-add-btn" onclick="togglePanel('edu-panel')" style="display:none;" id="edu-add-btn">+ Add</button>
+      </div>
+      <div class="add-panel" id="edu-panel">
+        <div class="add-panel-grid">
+          <div class="form-group"><label>Degree / Level</label><input type="text" id="e-role" placeholder="B.Tech — CSE"/></div>
+          <div class="form-group"><label>Institution</label><input type="text" id="e-org" placeholder="College Name"/></div>
+          <div class="form-group"><label>Year</label><input type="text" id="e-date" placeholder="2020 – 2023"/></div>
+          <div class="form-group"><label>Grade / CGPA</label><input type="text" id="e-grade" placeholder="CGPA: 9.3"/></div>
+        </div>
+        <div class="panel-actions">
+          <button class="btn-primary" onclick="addEdu()" style="font-size:0.85rem;padding:10px 22px;">Save</button>
+          <button class="btn-outline" onclick="togglePanel('edu-panel')" style="font-size:0.85rem;padding:10px 22px;">Cancel</button>
+        </div>
+      </div>
+      <div id="edu-list"></div>
+    </div>
+
+    <div class="reveal-right">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;">
+        <div class="exp-sub-title" style="margin-bottom:0;">Certifications</div>
+        <button class="admin-add-btn" onclick="togglePanel('cert-panel')">+ Add</button>
+      </div>
+      <div class="add-panel" id="cert-panel">
+        <div class="add-panel-grid">
+          <div class="form-group"><label>Icon (emoji)</label><input type="text" id="c-icon" placeholder="🏆" maxlength="2" style="width:70px;"/></div>
+          <div class="form-group"><label>Certificate Name</label><input type="text" id="c-name" placeholder="AWS Cloud Practitioner"/></div>
+          <div class="form-group"><label>Issuer</label><input type="text" id="c-issuer" placeholder="Amazon Web Services"/></div>
+          <div class="form-group"><label>Certificate Link</label><input type="url" id="c-link" placeholder="https://..."/></div>
+        </div>
+        <div class="panel-actions">
+          <button class="btn-primary" onclick="addCert()" style="font-size:0.85rem;padding:10px 22px;">Save</button>
+          <button class="btn-outline" onclick="togglePanel('cert-panel')" style="font-size:0.85rem;padding:10px 22px;">Cancel</button>
+        </div>
+      </div>
+      <div class="cert-list" id="cert-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- PUBLICATIONS -->
+<section id="publications">
+  <div class="section-header">
+    <div>
+      <div class="section-label reveal">Research Work</div>
+      <h2 class="section-title reveal">Publications</h2>
+      <div class="section-divider reveal"></div>
+    </div>
+    <button class="admin-add-btn" onclick="togglePanel('pub-panel')">+ Add Publication</button>
+  </div>
+  <div class="add-panel" id="pub-panel">
+    <div class="add-panel-grid">
+      <div class="form-group"><label>Paper Title</label><input type="text" id="pub-title" placeholder="Research Paper Title"/></div>
+      <div class="form-group"><label>Publisher</label><input type="text" id="pub-publisher" placeholder="Springer, IEEE..."/></div>
+      <div class="form-group"><label>Conference / Journal</label><input type="text" id="pub-conf" placeholder="ICCIC 2025"/></div>
+      <div class="form-group"><label>Year</label><input type="text" id="pub-year" placeholder="2025"/></div>
+      <div class="form-group"><label>Venue</label><input type="text" id="pub-venue" placeholder="Hyderabad, India"/></div>
+      <div class="form-group"><label>Certificate Link</label><input type="url" id="pub-cert" placeholder="https://..."/></div>
+      <div class="form-group"><label>Paper / DOI Link</label><input type="url" id="pub-doi" placeholder="https://..."/></div>
+    </div>
+    <div class="panel-actions">
+      <button class="btn-primary" onclick="addPub()" style="font-size:0.85rem;padding:10px 22px;">Save</button>
+      <button class="btn-outline" onclick="togglePanel('pub-panel')" style="font-size:0.85rem;padding:10px 22px;">Cancel</button>
+    </div>
+  </div>
+  <div class="pub-list" id="pub-list"></div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-label reveal">Let's Connect</div>
+  <h2 class="section-title reveal">Get In Touch</h2>
+  <div class="section-divider reveal"></div>
+  <div class="contact-inner">
+    <div class="contact-info reveal-left">
+      <p>I am actively looking for software engineering roles where I can contribute meaningfully from day one. If you have an opportunity, a project idea, or just want to connect — feel free to reach out.</p>
+      <div class="contact-links">
+        <a href="mailto:eligantibalakrishna@gmail.com" class="contact-link"><div class="contact-link-icon">✉️</div>eligantibalakrishna@gmail.com</a>
+        <a href="tel:+918978819688" class="contact-link"><div class="contact-link-icon">📞</div>+91-8978819688</a>
+        <a href="https://linkedin.com/in/bala-krishna-link0457" class="contact-link" target="_blank"><div class="contact-link-icon">💼</div>bala-krishna-link0457</a>
+        <a href="https://github.com/balakrishna0457" class="contact-link" target="_blank"><div class="contact-link-icon">🐙</div>balakrishna0457</a>
+        <a href="https://www.instagram.com/bala0457?igsh=b2dvZ3ljeXRrN3Bi" class="contact-link" target="_blank"><div class="contact-link-icon">📸</div>@bala0457</a>
+        <a href="https://x.com/BalaKrishn0458" class="contact-link" target="_blank"><div class="contact-link-icon">🐦</div>@BalaKrishn0458</a>
+      </div>
+    </div>
+    <div class="contact-form reveal-right">
+      <form id="contact-form" action="https://formspree.io/f/eligantibalakrishna@gmail.com" method="POST" style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="form-group"><label>Your Name</label><input type="text" name="name" placeholder="John Doe" required/></div>
+        <div class="form-group"><label>Email Address</label><input type="email" name="email" placeholder="john@company.com" required/></div>
+        <div class="form-group"><label>Message</label><textarea name="message" placeholder="Tell me about the opportunity..." required></textarea></div>
+        <div id="form-status" style="display:none;padding:10px 16px;border-radius:6px;font-size:0.85rem;font-weight:600;"></div>
+        <button type="submit" class="btn-primary" style="align-self:flex-start;" id="form-btn">Send Message ✉️</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 <span>Eliganti Bala Krishna</span> · Built with purpose · Open to opportunities</p>
+</footer>
+
+<script>
+/* PARTICLES */
+const canvas=document.getElementById('particles-canvas'),ctx=canvas.getContext('2d');
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resizeCanvas();window.addEventListener('resize',resizeCanvas);
+const particles=[];
+function Particle(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.size=Math.random()*1.5+0.3;this.sx=(Math.random()-0.5)*0.3;this.sy=(Math.random()-0.5)*0.3;this.o=Math.random()*0.35+0.08;}
+for(let i=0;i<100;i++)particles.push(new Particle());
+function animPart(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{p.x+=p.sx;p.y+=p.sy;if(p.x<0||p.x>canvas.width)p.sx*=-1;if(p.y<0||p.y>canvas.height)p.sy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(201,168,76,${p.o})`;ctx.fill();});
+  for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<120){ctx.beginPath();ctx.strokeStyle=`rgba(201,168,76,${0.06*(1-d/120)})`;ctx.lineWidth=0.5;ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.stroke();}}
+  requestAnimationFrame(animPart);
+}
+animPart();
+
+/* TYPEWRITER */
+const roles=['Software Engineer','Java Developer','Full Stack Developer','Blockchain Builder','Published Researcher','Problem Solver'];
+let ri=0,ci=0,del=false;
+const tw=document.getElementById('typewriter');
+function typeLoop(){const cur=roles[ri];if(!del){tw.textContent=cur.slice(0,++ci);if(ci===cur.length){del=true;setTimeout(typeLoop,1800);return;}}else{tw.textContent=cur.slice(0,--ci);if(ci===0){del=false;ri=(ri+1)%roles.length;}}setTimeout(typeLoop,del?55:90);}
+typeLoop();
+
+/* SCROLL REVEAL */
+const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');}),{threshold:0.1});
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>obs.observe(el));
+
+/* ADMIN */
+const AU='bala0457',AP='Bala0457';
+let isAdmin=false;
+function handleAdminClick(){if(isAdmin){logout();return;}document.getElementById('login-modal').classList.add('show');setTimeout(()=>document.getElementById('login-user').focus(),100);}
+function closeLogin(){document.getElementById('login-modal').classList.remove('show');document.getElementById('login-error').style.display='none';document.getElementById('login-user').value='';document.getElementById('login-pass').value='';}
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value;
+  if(u===AU&&p===AP){
+    isAdmin=true;document.body.classList.add('admin-mode');renderSkills();
+    document.getElementById('admin-badge').textContent='✏️ Admin ON';
+    document.getElementById('admin-badge').classList.add('active');
+    document.getElementById('edu-add-btn').style.display='block';
+    document.getElementById('profile-hint').classList.add('active');
+    closeLogin();renderCerts();renderProjects();renderPubs();renderEdu();
+  }else{document.getElementById('login-error').style.display='block';}
+}
+function logout(){
+  isAdmin=false;document.body.classList.remove('admin-mode');renderSkills();
+  document.getElementById('admin-badge').textContent='🔒 Admin';
+  document.getElementById('admin-badge').classList.remove('active');
+  document.getElementById('edu-add-btn').style.display='none';
+  document.getElementById('profile-hint').classList.remove('active');
+  renderCerts();renderProjects();renderPubs();renderEdu();
+}
+document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+/* PROFILE */
+function triggerProfileUpload(){if(!isAdmin)return;document.getElementById('profile-file').click();}
+function handleProfileUpload(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{const img=document.getElementById('profile-img');img.src=ev.target.result;img.style.display='block';document.getElementById('profile-initials').style.display='none';};r.readAsDataURL(file);}
+
+/* PANEL TOGGLE */
+function togglePanel(id){const p=document.getElementById(id);p.classList.toggle('open');}
+
+/* UPDATE HOME STATS */
+function updateStats(){
+  document.getElementById('stat-projects').textContent=projects.length+'+';
+  document.getElementById('stat-certs').textContent=certs.length+'+';
+  document.getElementById('stat-pubs').textContent=pubs.length+'+';
+  const ap=document.getElementById('about-stat-projects');
+  const ac=document.getElementById('about-stat-certs');
+  if(ap) ap.textContent=projects.length+'+';
+  if(ac) ac.textContent=certs.length+'+';
+}
+
+/* SKILLS */
+const skillGroups = [
+  {title:'Languages', skills:['C','C++','Java','Python','SQL']},
+  {title:'Web Technologies', skills:['HTML','CSS','.NET','React.js','Node.js']},
+  {title:'Frameworks', skills:['MVC','Hibernate','Spring Boot','Django','Flask']},
+  {title:'Databases & Tools', skills:['MySQL','MongoDB','VS Code','Git','Jupyter']},
+  {title:'Enterprise Platforms', skills:['ServiceNow','SAP S/4HANA','Salesforce']},
+  {title:'Soft Skills', skills:['DSA & Problem Solving','Communication','People Management','Rapport Building']}
+];
+
+function renderSkills(){
+  const grid = document.getElementById('skills-grid');
+  if(!grid) return;
+  grid.innerHTML = skillGroups.map((g,gi) => `
+    <div class="skill-group reveal">
+      <div class="skill-group-title">
+        ${g.title}
+        <button class="skill-group-remove" onclick="removeSkillGroup(${gi})">✕ Remove Group</button>
+      </div>
+      <div class="skill-tags" id="sg-tags-${gi}">
+        ${g.skills.map((s,si) => `
+          <span class="skill-tag">
+            ${s}
+            <span class="skill-tag-remove" onclick="removeSkill(${gi},${si})">✕</span>
+          </span>`).join('')}
+      </div>
+      <div class="skill-add-tag">
+        <input type="text" class="skill-add-input" id="new-skill-${gi}" placeholder="Add skill..." onkeydown="if(event.key==='Enter')addSkillToGroup(${gi})"/>
+        <button class="skill-add-btn-small" onclick="addSkillToGroup(${gi})">+ Add</button>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('#skills-grid .reveal').forEach(el=>obs.observe(el));
+}
+
+function addSkillGroup(){
+  const title = document.getElementById('sg-title').value.trim();
+  const skills = document.getElementById('sg-skills').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!title) { alert('Group title required.'); return; }
+  skillGroups.push({title, skills});
+  renderSkills();
+  document.getElementById('sg-title').value='';
+  document.getElementById('sg-skills').value='';
+  togglePanel('skill-panel');
+}
+
+function removeSkillGroup(gi){
+  if(confirm('Remove "'+skillGroups[gi].title+'" group?')){ skillGroups.splice(gi,1); renderSkills(); }
+}
+
+function removeSkill(gi, si){
+  skillGroups[gi].skills.splice(si,1);
+  renderSkills();
+}
+
+function addSkillToGroup(gi){
+  const input = document.getElementById('new-skill-'+gi);
+  const val = input.value.trim();
+  if(!val) return;
+  skillGroups[gi].skills.push(val);
+  renderSkills();
+}
+
+/* HERO EDITS */
+function toggleStatusEdit(){
+  const row = document.getElementById('status-edit-row');
+  row.style.display = row.style.display==='none' ? 'block' : 'none';
+}
+function updateStatus(){
+  const val = document.getElementById('status-input').value.trim();
+  if(!val) return;
+  document.getElementById('hero-status-tag').textContent = val;
+  toggleStatusEdit();
+}
+function toggleDescEdit(){
+  const row = document.getElementById('desc-edit-row');
+  row.style.display = row.style.display==='none' ? 'block' : 'none';
+  if(row.style.display==='block'){
+    document.getElementById('desc-input').value = document.getElementById('hero-desc').textContent.trim();
+  }
+}
+function updateDesc(){
+  const val = document.getElementById('desc-input').value.trim();
+  if(!val) return;
+  document.getElementById('hero-desc').textContent = val;
+  toggleDescEdit();
+}
+
+/* PROJECTS */
+const projects=[
+  {icon:'⛓️',title:'Privacy-Preserving P2P Lending System',desc:'A decentralized peer-to-peer lending platform built on blockchain technology. Leverages Ethereum smart contracts on the Polygon network to automate the full lending lifecycle — loan creation, funding, repayment, and collateral management — without any central intermediary. Integrates privacy-preserving mechanisms so only necessary financial data is disclosed, protecting both lender and borrower identities.',tech:['React.js','Node.js','MongoDB','Solidity','Polygon','MetaMask'],github:'https://github.com/balakrishna0457/P2P-Money-lending-using-Blockchain',demo:''},
+  {icon:'✅',title:'Task Manager Web Application',desc:'A secure, full-featured task management system built with Flask and MySQL. Supports user authentication, task creation, categorization, priority tagging, status tracking, and automated email notifications via SMTP. Designed with a clean, responsive interface for seamless day-to-day productivity management.',tech:['Python','Flask','MySQL','HTML/CSS','SMTP'],github:'https://github.com/balakrishna0457/Personal-Task-Manager',demo:''},
+  {icon:'🌐',title:'Personal Portfolio Website',desc:'A fully animated, professional portfolio website built from scratch using pure HTML, CSS, and JavaScript — no frameworks. Features include a particle network background, typewriter effect, scroll reveal animations, spinning profile avatar with photo upload, and a complete admin mode secured with username and password login. Admin mode enables dynamic management of projects, certifications, education, and publications — all without touching any code. Counts auto-update on the hero and about sections. Integrated with Formspree for contact form delivery and includes social media links, GitHub project links, and certificate links accessible to all visitors.',tech:['HTML','CSS','JavaScript','Formspree','Particles.js'],github:'https://github.com/balakrishna0457/MyProtfolio',demo:''},
+  {icon:'✈️',title:'Flight Finder App — YL Flights',desc:'A full-stack MERN flight booking platform that enables travelers to discover, search, and book flights effortlessly. Features include real-time flight search by departure city, destination, and date; a secure booking flow capturing passenger details, seat class, and travel dates; and instant booking confirmation. The system supports three user roles — Customer, Flight Operator, and Admin — each with dedicated dashboards. The Admin dashboard provides oversight of all users, bookings, and flights, while the Flight Operator dashboard allows operators to add and manage their flight routes. Built with JWT-based authentication, MongoDB schemas for Users, Flights, and Bookings, and a clean React.js interface backed by a Node.js/Express REST API.',tech:['React.js','Node.js','Express.js','MongoDB','JWT','REST API'],github:'https://github.com/balakrishna0457/FlightFinder',demo:''}
+];
+function renderProjects(){
+  document.getElementById('projects-grid').innerHTML=projects.map((p,i)=>`
+    <div class="project-card reveal">
+      ${isAdmin?`<button class="project-remove" onclick="removeProject(${i})">✕</button>`:''}
+      <span class="project-icon">${p.icon}</span>
+      <div class="project-title">${p.title}</div>
+      <p class="project-desc">${p.desc}</p>
+      <div class="project-tech">${p.tech.map(t=>`<span class="tech-badge">${t}</span>`).join('')}</div>
+      <div class="project-links">
+        ${p.github?`<a href="${p.github}" target="_blank" class="project-link">🐙 GitHub</a>`:''}
+        ${p.demo?`<a href="${p.demo}" target="_blank" class="project-link">🌐 Live Demo</a>`:''}
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('#projects-grid .reveal').forEach(el=>obs.observe(el));
+  updateStats();
+}
+function addProject(){
+  const icon=document.getElementById('p-icon').value.trim()||'🚀';
+  const title=document.getElementById('p-title').value.trim();
+  const desc=document.getElementById('p-desc').value.trim();
+  const tech=document.getElementById('p-tech').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const github=document.getElementById('p-github').value.trim();
+  const demo=document.getElementById('p-demo').value.trim();
+  if(!title||!desc){alert('Title and description required.');return;}
+  projects.push({icon,title,desc,tech,github,demo});
+  renderProjects();
+  ['p-icon','p-title','p-desc','p-tech','p-github','p-demo'].forEach(id=>document.getElementById(id).value='');
+  togglePanel('project-panel');
+}
+function removeProject(i){if(confirm('Remove project?')){projects.splice(i,1);renderProjects();}}
+
+/* EDUCATION */
+const edus=[
+  {date:'2023 – Mar 2026',role:'B.Tech — Computer Science & Engineering',org:'Sri Vasavi Engineering College',grade:'CGPA: 7.92'},
+  {date:'2020 – 2023',role:'Diploma — Computer Science & Engineering',org:'AANM & VVRSR Polytechnic, Gudlavalleru',grade:'CGPA: 9.3'},
+  {date:'2019 – 2020',role:'SSC (10th Standard)',org:'Sasi English Medium High School',grade:'CGPA: 9.52'}
+];
+function renderEdu(){
+  document.getElementById('edu-list').innerHTML=edus.map((e,i)=>`
+    <div class="timeline-item">
+      <div class="tl-date">${e.date} ${isAdmin?`<button class="edu-remove" onclick="removeEdu(${i})">✕ Remove</button>`:''}</div>
+      <div class="tl-role">${e.role}</div>
+      <div class="tl-org">${e.org}</div>
+      <div class="tl-grade">${e.grade}</div>
+    </div>`).join('');
+}
+function addEdu(){
+  const role=document.getElementById('e-role').value.trim();
+  const org=document.getElementById('e-org').value.trim();
+  const date=document.getElementById('e-date').value.trim();
+  const grade=document.getElementById('e-grade').value.trim();
+  if(!role||!org){alert('Degree and institution required.');return;}
+  edus.unshift({date,role,org,grade});
+  renderEdu();
+  ['e-role','e-org','e-date','e-grade'].forEach(id=>document.getElementById(id).value='');
+  togglePanel('edu-panel');
+}
+function removeEdu(i){if(confirm('Remove education entry?')){edus.splice(i,1);renderEdu();}}
+
+/* CERTIFICATIONS */
+const certs=[
+  {icon:'🛠️',name:'ServiceNow Administrator',issuer:'ServiceNow',link:'https://tinyurl.com/yb4z64my'},
+  {icon:'🏢',name:'SAP ABAP on S/4HANA',issuer:'SAP — Naxrita DevCon',link:'https://drive.google.com/file/d/1jY_m_8NqDc6ZSEs_ur4x08-XdOMUgCWx/view?usp=sharing'},
+  {icon:'🤖',name:'Salesforce Agentic AI',issuer:'Salesforce',link:'https://tinyurl.com/3mndrtya'},
+  {icon:'☁️',name:'AWS Cloud Hackathon',issuer:'Amazon Web Services',link:'https://tinyurl.com/59y2zv7u'},
+  {icon:'🎓',name:'Smart Internz Certification',issuer:'Smart Internz',link:'https://drive.google.com/file/d/1VBxhFBlGPwIyBoYFzLe8JaKeJpDsxtg5/view?usp=sharing'}
+];
+function renderCerts(){
+  document.getElementById('cert-list').innerHTML=certs.map((c,i)=>`
+    <div class="cert-item" style="animation-delay:${i*0.1}s">
+      <a href="${c.link}" target="_blank" style="display:flex;align-items:center;gap:1rem;text-decoration:none;flex:1;">
+        <div class="cert-icon">${c.icon}</div>
+        <div><div class="cert-name">${c.name}</div><div class="cert-issuer">${c.issuer} ↗</div></div>
+      </a>
+      <button class="cert-remove" onclick="removeCert(${i})">✕</button>
+    </div>`).join('');
+  updateStats();
+}
+function addCert(){
+  const icon=document.getElementById('c-icon').value.trim()||'🏆';
+  const name=document.getElementById('c-name').value.trim();
+  const issuer=document.getElementById('c-issuer').value.trim();
+  const link=document.getElementById('c-link').value.trim();
+  if(!name||!issuer){alert('Name and issuer required.');return;}
+  certs.push({icon,name,issuer,link});
+  renderCerts();
+  ['c-icon','c-name','c-issuer','c-link'].forEach(id=>document.getElementById(id).value='');
+  togglePanel('cert-panel');
+}
+function removeCert(i){if(confirm('Remove certificate?')){certs.splice(i,1);renderCerts();}}
+
+/* PUBLICATIONS */
+const pubs=[
+  {title:'Privacy Preserving P2P Lending System',publisher:'Springer',conf:'ICCIC 2025',year:'2025',venue:'Vasavi College of Engineering, Hyderabad · 12–13 Dec 2025',cert:'https://tinyurl.com/yb4z64my',doi:''}
+];
+function renderPubs(){
+  document.getElementById('pub-list').innerHTML=pubs.map((p,i)=>`
+    <div class="pub-card reveal">
+      ${isAdmin?`<button class="pub-remove" onclick="removePub(${i})">✕</button>`:''}
+      <div class="pub-badge-row">
+        <span class="pub-badge springer">📘 ${p.publisher}</span>
+        <span class="pub-badge conf">${p.conf}</span>
+        <span class="pub-badge year">${p.year}</span>
+      </div>
+      <div class="pub-title">${p.title}</div>
+      <div class="pub-meta">📍 ${p.venue}</div>
+      <div class="pub-links">
+        ${p.cert?`<a href="${p.cert}" target="_blank" class="pub-link">📄 Certificate ↗</a>`:''}
+        ${p.doi?`<a href="${p.doi}" target="_blank" class="pub-link">📖 Read Paper ↗</a>`:''}
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('#pub-list .reveal').forEach(el=>obs.observe(el));
+  updateStats();
+}
+function addPub(){
+  const title=document.getElementById('pub-title').value.trim();
+  const publisher=document.getElementById('pub-publisher').value.trim();
+  const conf=document.getElementById('pub-conf').value.trim();
+  const year=document.getElementById('pub-year').value.trim();
+  const venue=document.getElementById('pub-venue').value.trim();
+  const cert=document.getElementById('pub-cert').value.trim();
+  const doi=document.getElementById('pub-doi').value.trim();
+  if(!title){alert('Title required.');return;}
+  pubs.push({title,publisher,conf,year,venue,cert,doi});
+  renderPubs();
+  ['pub-title','pub-publisher','pub-conf','pub-year','pub-venue','pub-cert','pub-doi'].forEach(id=>document.getElementById(id).value='');
+  togglePanel('pub-panel');
+}
+function removePub(i){if(confirm('Remove publication?')){pubs.splice(i,1);renderPubs();}}
+
+/* CONTACT FORM */
+const cf=document.getElementById('contact-form');
+if(cf){cf.addEventListener('submit',async function(e){
+  e.preventDefault();
+  const btn=document.getElementById('form-btn'),st=document.getElementById('form-status');
+  btn.textContent='Sending...';btn.disabled=true;
+  try{
+    const res=await fetch('https://formspree.io/f/eligantibalakrishna@gmail.com',{method:'POST',headers:{'Accept':'application/json'},body:new FormData(cf)});
+    if(res.ok){st.style.cssText='display:block;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:10px 16px;border-radius:6px;font-size:0.85rem;font-weight:600;';st.textContent='✅ Message sent! I will get back to you soon.';cf.reset();}
+    else throw new Error();
+  }catch{st.style.cssText='display:block;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;padding:10px 16px;border-radius:6px;font-size:0.85rem;font-weight:600;';st.textContent='❌ Something went wrong. Please email me directly.';}
+  btn.textContent='Send Message ✉️';btn.disabled=false;
+});}
+
+/* INIT */
+renderSkills();
+renderProjects();
+renderEdu();
+renderCerts();
+renderPubs();
+</script>
+</body>
+</html>
